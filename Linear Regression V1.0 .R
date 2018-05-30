@@ -42,14 +42,14 @@ bgditerations <- (bgdlearning_rate*0)
 
 #Loop for implementation of BGD for various learning rates. 
 for(j in 1:length(bgdlearning_rate)){
-# Each iteration is trained for 1000 steps to find the global minimum 
+# Each iteration is trained for 1000 times on all the records to find the global minimum 
     for( i in 1:1000){
     #break condition
       if( (2*bgdlearning_rate[j]* sum(y100-(bgdb0[j]+bgdb1[j]*ud100))) < 0.0001 &
         (2*bgdlearning_rate[j]* sum((y100-(bgdb0[j]+bgdb1[j]*ud100))*ud100)) <  0.0001){
       break;
       }
-      #udate steps if still scope of improvement
+      #update steps if still scope of improvement
     else{
       bgdb0[j] <- bgdb0[j] + (2*bgdlearning_rate[j]* sum(y100-(bgdb0[j]+bgdb1[j]*ud100)))
       bgdb1[j] <- bgdb1[j] + (2*bgdlearning_rate[j]* sum((y100-(bgdb0[j]+bgdb1[j]*ud100))*ud100))
@@ -57,10 +57,73 @@ for(j in 1:length(bgdlearning_rate)){
     
     }
 #storing the iterations count  
-  bgditerations <- rbind(bgditerations,i*length(ud100))
+  bgditerations[j] <- i*length(ud100)
 }
 
 #Combining the vectors in a dataframe for side by side comparison
 bgd <- as.data.frame(cbind(bgdlearning_rate,bgdb0,bgdb1,bgditerations))
-rownames(bgd) <- seq(1,nrow(bgd),1)
+
+#view the result
 bgd
+
+
+#observations:-
+#1. Low learning rate take a lot of iterations to find the minimum
+#2. High learning rate takes less interation but is incorrect 
+#a balance between the learning rate and computation is needed
+
+
+#implementation of Stochastic Gradient Descent (SGD) using various learning rate to compare
+
+
+#intializing a sequaence of learning rates
+sgdlearning_rate <- seq(0.002,0.009,0.00005)
+
+#creating vector of value 0 of equal length of learning rates for b0 and b1. 
+sgdb0 <- (sgdlearning_rate*0)
+sgdb1 <- (sgdlearning_rate*0)
+
+
+# creating another vector of value 0 which will store count of iterations per execution
+sgditerations <- (sgdlearning_rate*0)
+
+
+
+#define a break variable
+brk <- 0
+#Loop for implementation of SGD for various learning rates. 
+for(j in 1:length(sgdlearning_rate)){
+  # Each iteration of learning rate is trained for 1000 loops
+  for(k in 1 :1000){
+    # each record is processed one by one to find the global minimum 
+    for( i in 1:length(ud100)){
+      if( (2*sgdlearning_rate[j]* (y100[i]-(sgdb0[j]+sgdb1[j]*ud100[i]))) < 0.00001 & (2*sgdlearning_rate[j]* ((y100[i]-(sgdb0[j]+sgdb1[j]*ud100[i]))*ud100[i])) <  0.00001)
+      {
+        brk <- 1
+        break
+      }
+      #update steps if still scope of improvement
+      else{
+        sgdb0[j] <- sgdb0[j] + (2*sgdlearning_rate[j]* (y100[i]-(sgdb0[j]+sgdb1[j]*ud100[i])))
+        sgdb1[j] <- sgdb1[j] + (2*sgdlearning_rate[j]* ((y100[i]-(sgdb0[j]+sgdb1[j]*ud100[i]))*ud100[i]))
+      }
+    } 
+    #using the break variable to break the loop for K as well
+    if(brk ==1){
+      brk <- 0
+      break} 
+  }
+  #no. of iterations is the number of loops for a learning rate*record processed in each loop
+  sgditerations[j] <- ((k-1)*length(ud100)+i)
+}
+
+#Combining the vectors in a dataframe for side by side comparison
+sgd <- as.data.frame(cbind(sgdlearning_rate,sgdb0,sgdb1,sgditerations))
+
+#view the result
+sgd
+
+#Observations:-
+#1. a lot of variations in nearby learning rates
+#2. no. of executions are a lot lesser as compared to the gradient process
+#3. Finding the best fit is not easy with lot of variance in the predictor values
